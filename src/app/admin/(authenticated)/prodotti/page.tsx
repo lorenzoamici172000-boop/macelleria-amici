@@ -7,7 +7,7 @@ import { getProducts } from '@/services/products';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { formatCents } from '@/utils/currency';
-import { Plus, Search, Edit } from 'lucide-react';
+import { Plus, Search, Edit, Trash2 } from 'lucide-react';
 import type { Product } from '@/types';
 
 export default function AdminProdottiPage() {
