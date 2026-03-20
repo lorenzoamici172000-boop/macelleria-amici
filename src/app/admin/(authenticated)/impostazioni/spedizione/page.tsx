@@ -43,7 +43,7 @@ export default function AdminSpedizionePage() {
       is_active: true,
     });
 
-    if (dbError) { setError(dbError.message); return; }
+    if (dbError) { setError("Errore DB: " + dbError.message + " - Code: " + dbError.code + " - Details: " + dbError.details); return; }
     setNewRule({ zip_code: '', cost_decimal: '', description: '', estimated_days: '' });
     setSuccess('Regola aggiunta');
     revalidatePublicPages();
