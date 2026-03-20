@@ -31,7 +31,7 @@ export function Navbar({ links }: NavbarProps) {
       style={{ backgroundColor: settings.color_navbar_bg }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex h-24 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 shrink-0">
             {logoUrl ? (
@@ -44,7 +44,7 @@ export function Navbar({ links }: NavbarProps) {
               />
             ) : (
               <span
-                className="text-2xl font-display"
+                className="text-5xl font-display"
                 style={{ color: settings.color_navbar_text, fontFamily: 'var(--font-display)' }}
               >
                 Macelleria Amici
@@ -58,7 +58,7 @@ export function Navbar({ links }: NavbarProps) {
               <Link
                 key={link.id}
                 href={link.href}
-                className="text-sm font-display transition-opacity hover:opacity-80"
+                className="text-xl font-display transition-opacity hover:opacity-80"
                 style={{ color: settings.color_navbar_text, fontFamily: 'var(--font-display)' }}
               >
                 {locale === 'en' && link.label_en ? link.label_en : link.label_it}
@@ -84,7 +84,7 @@ export function Navbar({ links }: NavbarProps) {
               title={t('nav.wishlist')}
               style={{ color: settings.color_navbar_text }}
             >
-              <Heart size={20} />
+              <Heart size={28} />
             </Link>
 
             {/* Cart icon */}
@@ -94,7 +94,7 @@ export function Navbar({ links }: NavbarProps) {
               title={t('nav.cart')}
               style={{ color: settings.color_navbar_text }}
             >
-              <ShoppingCart size={20} />
+              <ShoppingCart size={28} />
               {itemCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold leading-none px-1">
                   {itemCount > 99 ? '99+' : itemCount}
