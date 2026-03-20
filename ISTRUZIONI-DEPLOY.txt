@@ -1,0 +1,358 @@
+# ══════════════════════════════════════════════════════════════
+#   ISTRUZIONI DEPLOY — MACELLERIA AMICI
+#   Le chiavi Supabase sono GIÀ integrate nel progetto.
+#   Segui i passi in ordine.
+# ══════════════════════════════════════════════════════════════
+
+
+# ┌─────────────────────────────────┐
+# │  COSA TI SERVE PRIMA           │
+# └─────────────────────────────────┘
+#
+# 1. Node.js 20+ installato → scarica da https://nodejs.org
+# 2. Git installato → scarica da https://git-scm.com
+# 3. Account GitHub → https://github.com (gratuito)
+# 4. Account Netlify → https://app.netlify.com (gratuito)
+# 5. Account Supabase → GIÀ FATTO ✓
+
+
+# ══════════════════════════════════════════════════════════════
+#  PASSO 1 — CONFIGURA IL DATABASE SU SUPABASE (15 minuti)
+# ══════════════════════════════════════════════════════════════
+
+# 1. Vai su https://supabase.com e accedi al tuo progetto
+#    (quello con URL: cupdkrgvvuylnjfimkkq.supabase.co)
+#
+# 2. Nel menu a sinistra clicca l'icona "SQL Editor"
+#
+# 3. Clicca il pulsante "+ New query"
+#
+# 4. ESEGUI IL PRIMO FILE:
+#    - Sul tuo computer, apri il file:
+#      supabase/migrations/001_initial_schema.sql
+#    - Seleziona TUTTO il contenuto (Ctrl+A)
+#    - Copia (Ctrl+C)
+#    - Incolla nell'SQL Editor di Supabase
+#    - Clicca il pulsante verde "Run"
+#    - Aspetta → deve dire "Success"
+#
+# 5. ESEGUI IL SECONDO FILE:
+#    - Clicca "+ New query" (query pulita)
+#    - Apri il file: supabase/migrations/002_storage_and_cron.sql
+#    - Copia tutto → incolla → clicca "Run"
+#    - Aspetta → deve dire "Success"
+#
+# 6. ESEGUI IL TERZO FILE (dati iniziali):
+#    - Clicca "+ New query"
+#    - Apri il file: supabase/seed/001_initial_data.sql
+#    - Copia tutto → incolla → clicca "Run"
+#    - Aspetta → deve dire "Success"
+#
+# 7. VERIFICA: nel menu a sinistra clicca "Table Editor"
+#    Devi vedere circa 25 tabelle nella colonna sinistra.
+#    Le più importanti:
+#    - site_settings (1 riga)
+#    - business_settings (1 riga con "Macelleria Amici")
+#    - categories (6 righe: Manzo, Maiale, ecc.)
+#    - navigation_links (5 righe)
+#    - pages (3 righe)
+
+
+# ══════════════════════════════════════════════════════════════
+#  PASSO 2 — CREA I BUCKET STORAGE (3 minuti)
+# ══════════════════════════════════════════════════════════════
+
+# 1. Nel menu a sinistra clicca "Storage"
+#
+# 2. Se vedi già "site-assets", "product-images", "media" → OK, vai avanti
+#
+# 3. Se NON li vedi, creali:
+#    - Clicca "New bucket"
+#    - Name: site-assets
+#    - ✓ Spunta "Public bucket"
+#    - Clicca "Create bucket"
+#    
+#    - Ripeti con Name: product-images (✓ Public)
+#    - Ripeti con Name: media (✓ Public)
+
+
+# ══════════════════════════════════════════════════════════════
+#  PASSO 3 — CREA L'ACCOUNT ADMIN (5 minuti)
+# ══════════════════════════════════════════════════════════════
+
+# 1. Nel menu a sinistra clicca "Authentication"
+# 2. Clicca "Users" nella barra in alto
+# 3. Clicca "Add user" → "Create new user"
+# 4. Compila:
+#    Email:    (la TUA email, es: tuonome@gmail.com)
+#    Password: (scegli una password forte, ANNOTALA!)
+#    ✓ Spunta "Auto Confirm User"
+# 5. Clicca "Create user"
+#
+# 6. Ora vai nel menu a sinistra → "SQL Editor"
+# 7. Clicca "+ New query"
+# 8. Incolla questa riga (sostituisci l'email con la tua):
+#
+#    UPDATE profiles SET role = 'admin' WHERE email = 'tuonome@gmail.com';
+#
+# 9. Clicca "Run"
+#    Deve dire "Success. 1 row affected"
+#
+# 10. VERIFICA: vai in "Table Editor" → clicca "profiles"
+#     Deve esserci una riga con la tua email e role = "admin"
+
+
+# ══════════════════════════════════════════════════════════════
+#  PASSO 4 — CONFIGURA GLI URL DI AUTENTICAZIONE (2 minuti)
+# ══════════════════════════════════════════════════════════════
+
+# 1. Nel menu a sinistra: ⚙️ Project Settings (ingranaggio in basso)
+# 2. Clicca "Authentication" nella barra laterale
+# 3. Nella sezione "URL Configuration":
+#    - Site URL: metti   http://localhost:3000
+#    - Redirect URLs: clicca "Add URL" e aggiungi:
+#      http://localhost:3000/**
+# 4. Clicca "Save"
+#
+# (Aggiungeremo l'URL Netlify dopo il deploy)
+
+
+# ══════════════════════════════════════════════════════════════
+#  PASSO 5 — TESTA IL PROGETTO IN LOCALE (5 minuti)
+# ══════════════════════════════════════════════════════════════
+
+# Apri il terminale nella cartella del progetto e scrivi:
+
+npm run dev
+
+# Aspetta che mostri:
+#   ▲ Next.js 14.x
+#   - Local: http://localhost:3000
+#
+# Apri il browser → http://localhost:3000
+#
+# CONTROLLA:
+# ✓ Vedi la Home con "Macelleria Amici" scritto in corsivo
+# ✓ Navbar nera con scritte argento
+# ✓ Footer nero con dati attività
+# ✓ Pulsante WhatsApp verde in basso a destra
+# ✓ /prodotti → pagina prodotti (vuota, è normale)
+# ✓ /admin → login admin separato (sfondo scuro)
+# ✓ Login admin funziona con email/password del passo 3
+# ✓ Dopo login admin → vedi la Dashboard
+#
+# Se tutto funziona → Ctrl+C per fermare il server
+#
+# Se NON funziona:
+# - Controlla la console del terminale per errori
+# - Verifica che il file .env.local esista nella cartella del progetto
+# - Apri .env.local e verifica che le chiavi siano corrette
+
+
+# ══════════════════════════════════════════════════════════════
+#  PASSO 6 — CARICA SU GITHUB (5 minuti)
+# ══════════════════════════════════════════════════════════════
+
+# 6.1 — Crea un repository su GitHub:
+# 1. Vai su https://github.com
+# 2. Clicca "+" in alto a destra → "New repository"
+# 3. Nome: macelleria-amici
+# 4. ⚠️ IMPORTANTE: seleziona "Private"
+# 5. NON spuntare "Add a README"
+# 6. Clicca "Create repository"
+
+# 6.2 — Carica il codice (dal terminale, nella cartella del progetto):
+
+git init
+git add .
+git commit -m "Macelleria Amici - primo deploy"
+git branch -M main
+git remote add origin https://github.com/TUO-USERNAME/macelleria-amici.git
+git push -u origin main
+
+# ⚠️ Sostituisci TUO-USERNAME con il tuo nome utente GitHub!
+#
+# Se ti chiede la password, devi usare un "Personal Access Token":
+# GitHub → Settings → Developer settings → Personal access tokens
+# → Tokens (classic) → Generate → seleziona "repo" → Generate
+# → COPIA il token e usalo come password
+#
+# Quando il push è completato, vai su GitHub e verifica
+# che i file siano nel repository.
+#
+# ⚠️ CONTROLLA: il file .env.local NON deve essere su GitHub!
+#    (è nel .gitignore, quindi non dovrebbe esserci)
+
+
+# ══════════════════════════════════════════════════════════════
+#  PASSO 7 — DEPLOY SU NETLIFY (10 minuti)
+# ══════════════════════════════════════════════════════════════
+
+# 7.1 — Crea il sito:
+# 1. Vai su https://app.netlify.com
+# 2. Registrati con GitHub (stesso account)
+# 3. Clicca "Add new site" → "Import an existing project"
+# 4. Clicca "Deploy with GitHub"
+# 5. Autorizza Netlify
+# 6. Seleziona "macelleria-amici" dalla lista
+
+# 7.2 — Configura il build:
+# Netlify dovrebbe riconoscere Next.js. Verifica:
+#   Build command:      npm run build
+#   Publish directory:  .next
+#
+# ⚠️ NON cliccare ancora "Deploy"!
+
+# 7.3 — Aggiungi le variabili d'ambiente:
+# Clicca "Show advanced" → "New variable"
+# Aggiungi queste 4 variabili (una alla volta):
+#
+# ┌─────────────────────────────────────────┬───────────────────────────────────────────────────────────────────────┐
+# │ Chiave                                  │ Valore                                                                │
+# ├─────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────┤
+# │ NEXT_PUBLIC_SUPABASE_URL                │ https://cupdkrgvvuylnjfimkkq.supabase.co                             │
+# ├─────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────┤
+# │ NEXT_PUBLIC_SUPABASE_ANON_KEY           │ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJl  │
+# │                                         │ ZiI6ImN1cGRrcmd2dnV5bG5qZmlta2txIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDQ │
+# │                                         │ wMjE2MTUsImV4cCI6MjA4OTU5NzYxNX0.xYag60Q04g24JNgmoR7_fAUrKf3sb5Uxt  │
+# │                                         │ py3utkTBWU                                                            │
+# ├─────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────┤
+# │ SUPABASE_SERVICE_ROLE_KEY               │ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJl  │
+# │                                         │ ZiI6ImN1cGRrcmd2dnV5bG5qZmlta2txIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsIm │
+# │                                         │ lhdCI6MTc3NDAyMTYxNSwiZXhwIjoyMDg5NTk3NjE1fQ.trH14gaHRezRPrvVzaCZO  │
+# │                                         │ Nlff61th3dKrM253b0OGXo                                               │
+# ├─────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────┤
+# │ NEXT_PUBLIC_SITE_URL                    │ (lascia vuoto per ora, lo aggiorni dopo il primo deploy)              │
+# └─────────────────────────────────────────┴───────────────────────────────────────────────────────────────────────┘
+#
+# ⚠️ COPIA LE CHIAVI DAL FILE .env.local — è più facile e sicuro!
+#    Apri .env.local, copia i valori e incollali su Netlify.
+
+# 7.4 — Lancia il deploy:
+# Clicca "Deploy site"
+# Aspetta 3-5 minuti.
+#
+# Se il build FALLISCE:
+# - Clicca sul deploy per vedere i log
+# - Errore comune: variabile d'ambiente mancante o sbagliata
+# - Errore: "@netlify/plugin-nextjs" → Vai in Plugins e installalo
+#
+# Se il build RIESCE:
+# - Netlify ti dà un URL tipo: https://qualcosa-12345.netlify.app
+# - COPIA QUESTO URL!
+
+# 7.5 — Aggiorna l'URL del sito:
+# 1. Su Netlify: Site settings → Environment variables
+#    Trova (o aggiungi) NEXT_PUBLIC_SITE_URL
+#    Valore: https://qualcosa-12345.netlify.app (il TUO URL Netlify)
+#
+# 2. Su Supabase: ⚙️ Project Settings → Authentication → URL Configuration
+#    - Site URL: metti il TUO URL Netlify
+#    - Redirect URLs: aggiungi  https://qualcosa-12345.netlify.app/**
+#    - Clicca "Save"
+#
+# 3. Su Netlify: Deploys → "Trigger deploy" → "Deploy site"
+#    (questo rideploy applica il nuovo URL)
+
+# 7.6 — (Opzionale) Cambia il nome del sito:
+# Su Netlify: Site settings → Site details → "Change site name"
+# Puoi mettere: macelleria-amici
+# Il nuovo URL sarà: https://macelleria-amici.netlify.app
+# Se cambi il nome, RIPETI il passo 7.5 con il nuovo URL!
+
+
+# ══════════════════════════════════════════════════════════════
+#  PASSO 8 — VERIFICA CHE TUTTO FUNZIONI ONLINE (5 minuti)
+# ══════════════════════════════════════════════════════════════
+
+# Apri il tuo sito Netlify nel browser.
+#
+# CHECKLIST:
+# ✓ Home carica con "Macelleria Amici" in corsivo
+# ✓ Navbar nera, testo argento
+# ✓ Footer con dati attività
+# ✓ Pulsante WhatsApp verde
+# ✓ /prodotti → pagina prodotti
+# ✓ /contatti → pagina contatti
+# ✓ /admin → login admin separato
+# ✓ Login admin funziona
+# ✓ Dashboard admin carica
+# ✓ Puoi creare un prodotto dall'admin
+# ✓ Il prodotto appare in /prodotti
+# ✓ Puoi registrare un utente dal sito pubblico
+# ✓ L'utente può aggiungere al carrello
+# ✓ L'utente può fare checkout (prenotazione)
+
+
+# ══════════════════════════════════════════════════════════════
+#  PASSO 9 — CONFIGURA IL SITO DAL PANNELLO ADMIN (15 min)
+# ══════════════════════════════════════════════════════════════
+
+# Accedi a https://tuosito.netlify.app/admin
+
+# 1. Impostazioni → Navigazione:
+#    - Carica il LOGO del negozio (PNG trasparente, 200x60px)
+#    - Carica il FAVICON (PNG 32x32)
+#    - Carica l'IMMAGINE HERO (foto del negozio, 1920x1080)
+
+# 2. Impostazioni → Dati attività:
+#    - Verifica nome, indirizzi, telefono, WhatsApp
+
+# 3. Impostazioni → Orari:
+#    - Configura gli orari di apertura
+
+# 4. Prodotti → Nuovo prodotto:
+#    - Aggiungi i tuoi prodotti con foto, prezzo, stock, IVA
+
+# 5. (Opzionale) Impostazioni → Spedizione:
+#    - Aggiungi regole per CAP se offri spedizione
+
+
+# ══════════════════════════════════════════════════════════════
+#  AGGIUNGERE STRIPE IN FUTURO (quando vorrai pagamenti online)
+# ══════════════════════════════════════════════════════════════
+
+# Quando vorrai attivare i pagamenti con carta:
+#
+# 1. Crea account su https://dashboard.stripe.com
+# 2. Developers → API keys → copia:
+#    - pk_test_... (Publishable key)
+#    - sk_test_... (Secret key)
+# 3. Developers → Webhooks → "Add endpoint":
+#    - URL: https://tuosito.netlify.app/api/webhooks/stripe
+#    - Eventi: checkout.session.completed, checkout.session.expired, charge.refunded
+#    - Copia il Signing secret: whsec_...
+# 4. Su Netlify → Environment variables, aggiungi:
+#    - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY = pk_test_...
+#    - STRIPE_SECRET_KEY = sk_test_...
+#    - STRIPE_WEBHOOK_SECRET = whsec_...
+# 5. Rideploy su Netlify
+# 6. Il pagamento online apparirà automaticamente nel checkout!
+#
+# Non serve modificare nessun codice.
+
+
+# ══════════════════════════════════════════════════════════════
+#  PROBLEMI COMUNI E SOLUZIONI
+# ══════════════════════════════════════════════════════════════
+
+# PROBLEMA: "Schermo bianco / errore"
+# → Controlla le env vars su Netlify (copia da .env.local)
+# → Controlla la console browser (F12)
+
+# PROBLEMA: "Login non funziona"
+# → Verifica Site URL e Redirect URLs in Supabase Auth settings
+# → Devono corrispondere all'URL Netlify esatto
+
+# PROBLEMA: "Admin dice Accesso non autorizzato"
+# → Riesegui in SQL Editor:
+#   UPDATE profiles SET role = 'admin' WHERE email = 'tuaemail@...';
+
+# PROBLEMA: "Build Netlify fallisce"
+# → Leggi il log di errore
+# → Se dice "module not found" → npm install non è stato fatto
+# → Se dice variable errors → controlla env vars
+
+# PROBLEMA: "Prodotto creato ma non si vede"
+# → Aspetta 60 secondi (cache ISR)
+# → Oppure ricarica la pagina

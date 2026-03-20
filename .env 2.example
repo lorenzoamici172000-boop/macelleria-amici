@@ -1,0 +1,43 @@
+# ==============================================
+# Supabase - Client (safe to expose)
+# ==============================================
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+
+# ==============================================
+# Supabase - Server only (NEVER expose to client)
+# ==============================================
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+
+# ==============================================
+# Stripe - Server only (NEVER expose to client)
+# ==============================================
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+
+# ==============================================
+# Stripe - Client (publishable key only)
+# ==============================================
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
+
+# ==============================================
+# Google Places API (server only, for reviews sync)
+# ==============================================
+GOOGLE_PLACES_API_KEY=your-google-api-key
+GOOGLE_PLACE_ID=your-place-id
+
+# ==============================================
+# Site
+# ==============================================
+NEXT_PUBLIC_SITE_URL=https://macelleria-amici.netlify.app
+
+# ==============================================
+# Email (Supabase handles via config, or custom SMTP)
+# ==============================================
+EMAIL_FROM=noreply@tuodominio.it
+
+# ==============================================
+# Admin bootstrap (use once, then remove)
+# ==============================================
+ADMIN_EMAIL=admin@macelleria-amici.it
+ADMIN_PASSWORD=change-me-immediately

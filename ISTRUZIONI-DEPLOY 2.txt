@@ -1,0 +1,756 @@
+# ══════════════════════════════════════════════════════════════
+#   ISTRUZIONI COMPLETE DEPLOY — MACELLERIA AMICI
+#   Segui ogni passo in ordine. Non saltare nulla.
+# ══════════════════════════════════════════════════════════════
+
+
+# ┌─────────────────────────────────────────────────┐
+# │  PREREQUISITI — Cosa ti serve prima di iniziare │
+# └─────────────────────────────────────────────────┘
+
+Software da installare sul tuo computer:
+
+1. Node.js versione 20 o superiore
+   → Scarica da: https://nodejs.org (scegli la versione LTS)
+   → Dopo installazione, apri il terminale e verifica:
+     node --version    (deve mostrare v20.x.x o superiore)
+     npm --version     (deve mostrare 10.x.x o superiore)
+
+2. Git
+   → Scarica da: https://git-scm.com/downloads
+   → Dopo installazione, verifica:
+     git --version
+
+Account da creare (tutti gratuiti):
+
+3. GitHub    → https://github.com (per il repository del codice)
+4. Supabase  → https://supabase.com (per il database)
+5. Netlify   → https://app.netlify.com (per l'hosting)
+6. Stripe    → https://dashboard.stripe.com (per i pagamenti)
+
+
+# ══════════════════════════════════════════════════════════════
+#   FASE 1 — PREPARAZIONE PROGETTO SUL TUO COMPUTER
+#   Tempo stimato: 5 minuti
+# ══════════════════════════════════════════════════════════════
+
+# PASSO 1.1 — Estrai il progetto
+# Metti il file macelleria-amici.tar.gz sul Desktop, poi:
+
+cd ~/Desktop
+tar xzf macelleria-amici.tar.gz
+cd macelleria-amici
+
+# Se sei su Windows e non hai tar, usa 7-Zip per estrarre.
+
+# PASSO 1.2 — Installa le dipendenze
+
+npm install
+
+# Attendi 1-2 minuti. Vedrai una barra di progresso.
+# Alla fine deve mostrare "added XXX packages" senza errori rossi.
+
+# PASSO 1.3 — Verifica che tutto sia a posto
+
+ls -la src/app
+
+# Deve mostrare le cartelle: (public), admin, api, ecc.
+# Se vedi queste cartelle, il progetto è estratto correttamente.
+
+
+# ══════════════════════════════════════════════════════════════
+#   FASE 2 — CONFIGURAZIONE SUPABASE
+#   Tempo stimato: 20 minuti
+# ══════════════════════════════════════════════════════════════
+
+# ┌──────────────────────────────────┐
+# │  PASSO 2.1 — Crea il progetto   │
+# └──────────────────────────────────┘
+
+# 1. Apri https://supabase.com
+# 2. Clicca "Start your project" → accedi con GitHub
+# 3. Clicca il pulsante verde "New Project"
+# 4. Compila:
+#    - Organization: seleziona la tua (o creane una)
+#    - Name: macelleria-amici
+#    - Database Password: clicca "Generate a password" e COPIALA in un file sicuro
+#    - Region: EU West (Ireland) eu-west-1
+# 5. Clicca "Create new project"
+# 6. ATTENDI 2-3 minuti che il progetto venga creato
+
+# ┌──────────────────────────────────┐
+# │  PASSO 2.2 — Copia le chiavi    │
+# └──────────────────────────────────┘
+
+# 1. Nel pannello Supabase, vai nel menu a sinistra:
+#    ⚙️ Project Settings → API
+#
+# 2. Vedrai questa sezione — copia TUTTI e 3 i valori:
+#
+#    Project URL:     https://abcdefg.supabase.co        ← COPIA QUESTO
+#    anon public:     eyJhbGciOiJIUzI1NiIs...             ← COPIA QUESTO
+#    service_role:    eyJhbGciOiJIUzI1NiIs...             ← COPIA QUESTO (⚠️ SEGRETO!)
+#
+# 3. Aprì un file di testo e incolla così (ti servirà dopo):
+#
+#    URL:          https://abcdefg.supabase.co
+#    ANON_KEY:     eyJhbGciOiJIUzI1NiIs...
+#    SERVICE_KEY:  eyJhbGciOiJIUzI1NiIs...
+
+# ┌──────────────────────────────────────┐
+# │  PASSO 2.3 — Crea le tabelle (SQL)  │
+# └──────────────────────────────────────┘
+
+# 1. Nel menu a sinistra di Supabase, clicca sull'icona:
+#    📝 SQL Editor
+#
+# 2. Clicca "+ New query"
+#
+# 3. PRIMO FILE — Schema principale:
+#    - Apri il file: supabase/migrations/001_initial_schema.sql
+#      (è nella cartella del progetto sul tuo computer)
+#    - Seleziona TUTTO il contenuto (Ctrl+A / Cmd+A)
+#    - Copialo (Ctrl+C / Cmd+C)
+#    - Incollalo nell'SQL Editor di Supabase
+#    - Clicca il pulsante verde "Run" (o Ctrl+Enter)
+#    - ATTENDI — deve mostrare "Success. No rows returned"
+#    - Se vedi errori rossi, controlla di aver copiato TUTTO il file
+#
+# 4. SECONDO FILE — Storage e indici:
+#    - Clicca "+ New query" (nuova query pulita)
+#    - Apri il file: supabase/migrations/002_storage_and_cron.sql
+#    - Copia tutto → incolla → clicca "Run"
+#    - Deve mostrare "Success"
+#
+# 5. TERZO FILE — Dati iniziali:
+#    - Clicca "+ New query"
+#    - Apri il file: supabase/seed/001_initial_data.sql
+#    - Copia tutto → incolla → clicca "Run"
+#    - Deve mostrare "Success"
+
+# ┌──────────────────────────────────────────┐
+# │  PASSO 2.4 — Verifica le tabelle        │
+# └──────────────────────────────────────────┘
+
+# 1. Nel menu a sinistra, clicca:
+#    📊 Table Editor
+#
+# 2. Nella colonna sinistra dovresti vedere TUTTE queste tabelle:
+#    ✓ admin_audit_logs
+#    ✓ analytics_daily_summary
+#    ✓ analytics_events
+#    ✓ billing_addresses
+#    ✓ business_settings      ← deve avere 1 riga con "Macelleria Amici"
+#    ✓ cart_items
+#    ✓ carts
+#    ✓ categories             ← deve avere 6 righe (Manzo, Maiale, ecc.)
+#    ✓ invoice_profiles
+#    ✓ media_assets
+#    ✓ navigation_links       ← deve avere 5 righe
+#    ✓ order_items
+#    ✓ orders
+#    ✓ pages                  ← deve avere 3 righe
+#    ✓ payments
+#    ✓ product_images
+#    ✓ products
+#    ✓ profiles
+#    ✓ review_sync_logs
+#    ✓ reviews
+#    ✓ shipping_addresses
+#    ✓ shipping_rules
+#    ✓ site_settings          ← deve avere 1 riga
+#    ✓ stock_reservations
+#    ✓ wishlist_items
+#    ✓ wishlists
+#
+# Se mancano tabelle, torna all'SQL Editor e riesegui il file corrispondente.
+
+# ┌──────────────────────────────────────────┐
+# │  PASSO 2.5 — Verifica Storage Buckets   │
+# └──────────────────────────────────────────┘
+
+# 1. Nel menu a sinistra, clicca:
+#    📦 Storage
+#
+# 2. Dovresti vedere 3 bucket:
+#    ✓ site-assets
+#    ✓ product-images
+#    ✓ media
+#
+# Se NON li vedi, creali manualmente:
+#    - Clicca "New bucket"
+#    - Name: site-assets
+#    - Spunta ✓ "Public bucket"
+#    - Clicca "Create bucket"
+#    - Ripeti per: product-images e media
+
+# ┌──────────────────────────────────────────┐
+# │  PASSO 2.6 — Crea l'account ADMIN       │
+# └──────────────────────────────────────────┘
+
+# ⚠️ IMPORTANTE: l'admin NON si crea dalla registrazione del sito!
+
+# 1. Nel menu a sinistra, clicca:
+#    👤 Authentication → Users
+#
+# 2. Clicca il pulsante "Add user" → "Create new user"
+#
+# 3. Compila:
+#    Email:    admin@macelleria-amici.it   (o la tua email)
+#    Password: UnaPasswordForte123!        (SCEGLI UNA PASSWORD SICURA)
+#    ✓ Spunta "Auto Confirm User"
+#
+# 4. Clicca "Create user"
+#
+# 5. Ora devi assegnare il ruolo admin. Vai in:
+#    📝 SQL Editor → "+ New query"
+#
+# 6. Incolla ed esegui questa query:
+
+# UPDATE profiles SET role = 'admin' WHERE email = 'admin@macelleria-amici.it';
+
+# (Sostituisci l'email se ne hai usata una diversa)
+#
+# 7. Clicca "Run" — deve mostrare "Success. 1 row affected"
+#
+# 8. VERIFICA: vai in Table Editor → profiles
+#    Deve esserci una riga con role = "admin"
+
+# ┌──────────────────────────────────────────┐
+# │  PASSO 2.7 — Configura Auth URLs        │
+# └──────────────────────────────────────────┘
+
+# 1. Vai in:
+#    ⚙️ Project Settings → Authentication
+#
+# 2. Nella sezione "URL Configuration":
+#    - Site URL: http://localhost:3000
+#    - Redirect URLs: clicca "Add URL" e aggiungi:
+#      http://localhost:3000/**
+#      https://macelleria-amici.netlify.app/**
+#
+# 3. Clicca "Save"
+
+
+# ══════════════════════════════════════════════════════════════
+#   FASE 3 — CONFIGURAZIONE STRIPE
+#   Tempo stimato: 10 minuti
+# ══════════════════════════════════════════════════════════════
+
+# ┌──────────────────────────────────────────┐
+# │  PASSO 3.1 — Crea account Stripe        │
+# └──────────────────────────────────────────┘
+
+# 1. Vai su https://dashboard.stripe.com
+# 2. Registrati e verifica l'email
+# 3. NON è necessario completare la verifica dell'attività per i TEST.
+#    Puoi usare la modalità test finché non sei pronto per andare live.
+
+# ┌──────────────────────────────────────────┐
+# │  PASSO 3.2 — Copia le chiavi API        │
+# └──────────────────────────────────────────┘
+
+# 1. Assicurati che in alto a destra ci sia scritto "Test mode" (arancione)
+# 2. Vai in: Developers → API keys (menu in alto)
+# 3. Copia:
+#    - Publishable key: pk_test_51...   ← COPIA
+#    - Secret key: clicca "Reveal test key" → sk_test_51...   ← COPIA
+#
+# Aggiungili al tuo file di appunti:
+#    STRIPE_PK:     pk_test_51...
+#    STRIPE_SK:     sk_test_51...
+
+# ┌──────────────────────────────────────────┐
+# │  PASSO 3.3 — Crea il Webhook            │
+# └──────────────────────────────────────────┘
+
+# ⚠️ Il webhook va configurato DOPO il deploy su Netlify (Passo 5.5).
+#    Per ora salti questo passo e ci torni dopo.
+#    Lo segnalo qui perché ti servirà la chiave webhook.
+
+
+# ══════════════════════════════════════════════════════════════
+#   FASE 4 — CONFIGURA IL FILE .env.local E TESTA IN LOCALE
+#   Tempo stimato: 10 minuti
+# ══════════════════════════════════════════════════════════════
+
+# ┌──────────────────────────────────────────┐
+# │  PASSO 4.1 — Crea il file .env.local    │
+# └──────────────────────────────────────────┘
+
+# Dal terminale, nella cartella del progetto:
+
+cp .env.example .env.local
+
+# Ora apri .env.local con un editor di testo e sostituisci i valori.
+# Su Mac: open -e .env.local
+# Su Windows: notepad .env.local
+# Oppure usa VS Code: code .env.local
+
+# Ecco cosa devi inserire (usa i valori che hai copiato):
+
+# ---- CONTENUTO DI .env.local ----
+# NEXT_PUBLIC_SUPABASE_URL=https://TUO-ID.supabase.co
+# NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ... (la anon key)
+# SUPABASE_SERVICE_ROLE_KEY=eyJ... (la service role key)
+# NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_51...
+# STRIPE_SECRET_KEY=sk_test_51...
+# STRIPE_WEBHOOK_SECRET=whsec_... (lo aggiungerai dopo, per ora lascia vuoto)
+# NEXT_PUBLIC_SITE_URL=http://localhost:3000
+# EMAIL_FROM=noreply@tuodominio.it
+# ---- FINE ----
+
+# ┌──────────────────────────────────────────┐
+# │  PASSO 4.2 — Testa in locale            │
+# └──────────────────────────────────────────┘
+
+npm run dev
+
+# Attendi che mostri:
+#   ▲ Next.js 14.x.x
+#   - Local: http://localhost:3000
+#
+# Apri il browser su http://localhost:3000
+
+# VERIFICA QUESTI PUNTI:
+# ✓ La Home carica (puoi vedere il titolo "Macelleria Amici" in Brush Script)
+# ✓ La Navbar è visibile con sfondo nero e testo argento
+# ✓ Il pulsante "Login" e "Registrati" sono visibili
+# ✓ /prodotti carica (sarà vuoto, è normale)
+# ✓ /admin mostra una pagina di login separata (sfondo scuro)
+# ✓ Login admin funziona con email/password creati al passo 2.6
+# ✓ Dopo login admin, vedi la dashboard
+#
+# Se qualcosa non funziona:
+# - Controlla che .env.local abbia i valori corretti
+# - Controlla la console del terminale per errori
+# - Controlla la console del browser (F12) per errori
+
+# Quando hai verificato, ferma il server con Ctrl+C
+
+
+# ══════════════════════════════════════════════════════════════
+#   FASE 5 — CARICA SU GITHUB E DEPLOY SU NETLIFY
+#   Tempo stimato: 15 minuti
+# ══════════════════════════════════════════════════════════════
+
+# ┌──────────────────────────────────────────┐
+# │  PASSO 5.1 — Crea repository su GitHub  │
+# └──────────────────────────────────────────┘
+
+# 1. Vai su https://github.com
+# 2. Clicca il "+" in alto a destra → "New repository"
+# 3. Compila:
+#    - Repository name: macelleria-amici
+#    - ⚠️ Seleziona "Private" (NON public!)
+#    - NON spuntare "Add a README file" (ce l'abbiamo già)
+# 4. Clicca "Create repository"
+# 5. GitHub ti mostra una pagina con le istruzioni. NON chiuderla.
+
+# ┌──────────────────────────────────────────┐
+# │  PASSO 5.2 — Carica il codice           │
+# └──────────────────────────────────────────┘
+
+# Dal terminale, nella cartella del progetto:
+
+git init
+git add .
+git commit -m "Macelleria Amici - primo deploy"
+git branch -M main
+git remote add origin https://github.com/TUO-USERNAME/macelleria-amici.git
+git push -u origin main
+
+# ⚠️ Sostituisci TUO-USERNAME con il tuo nome utente GitHub!
+#
+# Se ti chiede username e password:
+# - Username: il tuo username GitHub
+# - Password: devi usare un Personal Access Token, NON la password.
+#   Crealo su: GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic) → Generate
+#   Seleziona scope "repo" → Generate → COPIA il token e usalo come password
+#
+# Il push deve completarsi senza errori.
+# Verifica su GitHub che i file siano visibili nel repository.
+# ⚠️ Verifica che il file .env.local NON sia nel repository (è nel .gitignore).
+
+# ┌──────────────────────────────────────────┐
+# │  PASSO 5.3 — Crea sito su Netlify       │
+# └──────────────────────────────────────────┘
+
+# 1. Vai su https://app.netlify.com
+# 2. Registrati con GitHub (usa lo stesso account)
+# 3. Clicca "Add new site" → "Import an existing project"
+# 4. Scegli "Deploy with GitHub"
+# 5. Autorizza Netlify ad accedere ai tuoi repository
+# 6. Seleziona "macelleria-amici" dalla lista
+
+# ┌──────────────────────────────────────────┐
+# │  PASSO 5.4 — Configura build settings   │
+# └──────────────────────────────────────────┘
+
+# Netlify dovrebbe riconoscere Next.js automaticamente.
+# Verifica che sia impostato:
+#
+#   Branch to deploy:   main
+#   Build command:       npm run build
+#   Publish directory:   .next
+#
+# ⚠️ NON cliccare ancora "Deploy site"!
+# Prima devi aggiungere le variabili d'ambiente.
+
+# ┌─────────────────────────────────────────────────────┐
+# │  PASSO 5.5 — Aggiungi variabili d'ambiente         │
+# └─────────────────────────────────────────────────────┘
+
+# Nella stessa pagina, clicca "Show advanced" → "New variable"
+# Oppure dopo il deploy: Site settings → Environment variables
+#
+# Aggiungi QUESTE variabili (una alla volta):
+#
+# Chiave                                  │ Valore
+# ────────────────────────────────────────┼─────────────────────────────────
+# NEXT_PUBLIC_SUPABASE_URL                │ https://TUO-ID.supabase.co
+# NEXT_PUBLIC_SUPABASE_ANON_KEY           │ eyJ... (la anon key)
+# SUPABASE_SERVICE_ROLE_KEY               │ eyJ... (la service role key)
+# NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY      │ pk_test_51...
+# STRIPE_SECRET_KEY                       │ sk_test_51...
+# STRIPE_WEBHOOK_SECRET                   │ (lascia vuoto per ora, lo aggiungi al passo 5.7)
+# NEXT_PUBLIC_SITE_URL                    │ https://macelleria-amici.netlify.app
+# EMAIL_FROM                              │ noreply@tuodominio.it
+#
+# ⚠️ IMPORTANTE: copia i valori con ATTENZIONE.
+# Un singolo carattere sbagliato e il sito non funziona.
+# Non mettere spazi prima o dopo i valori.
+
+# ┌──────────────────────────────────────────┐
+# │  PASSO 5.6 — Lancia il deploy           │
+# └──────────────────────────────────────────┘
+
+# 1. Clicca "Deploy site"
+# 2. Netlify inizia il build. Attendi 3-5 minuti.
+# 3. Puoi vedere il progresso cliccando sul deploy in corso.
+#
+# Se il build FALLISCE:
+# - Clicca sul deploy fallito per vedere i log
+# - Errore comune: "Cannot find module..." → hai dimenticato npm install
+# - Errore comune: variabili d'ambiente mancanti → controlla il passo 5.5
+# - Errore: "@netlify/plugin-nextjs" → vai in Plugins e installalo
+#
+# Se il build RIESCE:
+# - Netlify ti assegna un URL tipo: https://macelleria-amici.netlify.app
+# - (Il nome potrebbe essere diverso, tipo random-name-12345.netlify.app)
+# - COPIA QUESTO URL — ti serve nel passo successivo
+
+# ┌───────────────────────────────────────────────────────┐
+# │  PASSO 5.7 — Configura Webhook Stripe (ora puoi!)    │
+# └───────────────────────────────────────────────────────┘
+
+# Ora che hai l'URL del sito, puoi configurare il webhook.
+
+# 1. Vai su https://dashboard.stripe.com
+# 2. Assicurati di essere in "Test mode"
+# 3. Vai in: Developers → Webhooks
+# 4. Clicca "Add endpoint"
+# 5. Compila:
+#    - Endpoint URL: https://macelleria-amici.netlify.app/api/webhooks/stripe
+#      (usa il TUO URL Netlify!)
+#    - Events to listen to: clicca "Select events" e spunta:
+#      ✓ checkout.session.completed
+#      ✓ checkout.session.expired
+#      ✓ charge.refunded
+# 6. Clicca "Add endpoint"
+# 7. Nella pagina del webhook, clicca "Reveal" sotto "Signing secret"
+# 8. Copia il valore: whsec_...
+#
+# 9. Torna su Netlify:
+#    - Site settings → Environment variables
+#    - Trova STRIPE_WEBHOOK_SECRET (o aggiungila)
+#    - Valore: whsec_... (quello appena copiato)
+#    - Salva
+#
+# 10. Rideploy: vai su Deploys → clicca "Trigger deploy" → "Deploy site"
+#     Attendi 3-5 minuti per il nuovo build.
+
+# ┌──────────────────────────────────────────────────────┐
+# │  PASSO 5.8 — Aggiorna Supabase con URL definitivo   │
+# └──────────────────────────────────────────────────────┘
+
+# Torna su Supabase:
+# 1. ⚙️ Project Settings → Authentication → URL Configuration
+# 2. Cambia Site URL da localhost a:
+#    https://macelleria-amici.netlify.app
+#    (usa il TUO URL Netlify)
+# 3. In Redirect URLs, verifica che ci sia:
+#    https://macelleria-amici.netlify.app/**
+# 4. Salva
+
+
+# ══════════════════════════════════════════════════════════════
+#   FASE 6 — VERIFICA CHE TUTTO FUNZIONI ONLINE
+#   Tempo stimato: 10 minuti
+# ══════════════════════════════════════════════════════════════
+
+# Apri il tuo sito: https://macelleria-amici.netlify.app
+
+# CHECKLIST DI VERIFICA:
+#
+# ✓ 1. Home carica — vedi il titolo in Brush Script MT
+# ✓ 2. Tema nero/argento applicato sulla navbar
+# ✓ 3. Footer visibile con dati attività
+# ✓ 4. Pulsante WhatsApp verde in basso a destra
+# ✓ 5. /prodotti carica (vuoto è normale, non hai ancora prodotti)
+# ✓ 6. /recensioni carica
+# ✓ 7. /contatti carica con indirizzo
+# ✓ 8. /admin mostra login admin SEPARATO (sfondo scuro)
+# ✓ 9. Login admin funziona
+# ✓ 10. Dashboard admin carica
+#
+# Se qualcosa non funziona:
+# - Apri la console browser (F12 → Console) per vedere errori
+# - Su Netlify: Deploys → clicca l'ultimo deploy → "Deploy log"
+# - Verifica le env vars su Netlify (un errore comune è uno spazio in più)
+
+
+# ══════════════════════════════════════════════════════════════
+#   FASE 7 — CONFIGURAZIONE INIZIALE DAL PANNELLO ADMIN
+#   Tempo stimato: 20 minuti
+# ══════════════════════════════════════════════════════════════
+
+# Accedi al pannello admin: https://tuosito.netlify.app/admin
+# Login con le credenziali create al passo 2.6
+
+# ┌──────────────────────────────────────────┐
+# │  7.1 — Carica logo, favicon e hero      │
+# └──────────────────────────────────────────┘
+
+# 1. Vai in: Impostazioni → Navigazione
+# 2. Sezione "Logo": clicca "Carica logo"
+#    - Formato consigliato: PNG trasparente, 200x60px circa
+# 3. Sezione "Favicon": clicca "Carica favicon"
+#    - Formato: PNG 32x32 o 64x64
+# 4. Sezione "Immagine Hero": clicca "Carica hero"
+#    - Foto del negozio o dei prodotti
+#    - Formato: JPG, almeno 1920x1080px
+
+# ┌──────────────────────────────────────────┐
+# │  7.2 — Configura dati attività          │
+# └──────────────────────────────────────────┘
+
+# 1. Vai in: Impostazioni → Dati attività
+# 2. Verifica/modifica:
+#    - Nome attività
+#    - Sede operativa
+#    - Sede legale
+#    - Telefono
+#    - WhatsApp
+#    - URL embed Google Maps (opzionale)
+# 3. Clicca "Salva"
+
+# ┌──────────────────────────────────────────┐
+# │  7.3 — Configura orari                  │
+# └──────────────────────────────────────────┘
+
+# 1. Vai in: Impostazioni → Orari e Ritiro
+# 2. Configura gli orari di apertura per ogni giorno
+# 3. Clicca "Salva"
+
+# ┌──────────────────────────────────────────┐
+# │  7.4 — Aggiungi prodotti                │
+# └──────────────────────────────────────────┘
+
+# 1. Vai in: Prodotti → "Nuovo prodotto"
+# 2. Compila:
+#    - Nome: es. "Bistecca di Manzo"
+#    - Prezzo: es. 18.90 (il sistema lo converte in centesimi)
+#    - Stock: es. 50
+#    - Categoria: seleziona (es. Manzo)
+#    - IVA: seleziona 22% (o quella corretta)
+#    - ✓ Ritirabile (quasi sempre)
+#    - Carica un'immagine (opzionale)
+# 3. Clicca "Crea prodotto"
+# 4. Ripeti per tutti i prodotti
+
+# ┌──────────────────────────────────────────┐
+# │  7.5 — Configura spedizione (opzionale) │
+# └──────────────────────────────────────────┘
+
+# Se offri spedizione:
+# 1. Vai in: Impostazioni → Spedizione
+# 2. Aggiungi regole per CAP:
+#    - CAP: 00137  Costo: 5.00€
+#    - CAP: 00138  Costo: 5.00€
+#    - ecc.
+# 3. I CAP non configurati non avranno spedizione disponibile
+
+# ┌──────────────────────────────────────────┐
+# │  7.6 — Test ordine                      │
+# └──────────────────────────────────────────┘
+
+# 1. Apri il sito in una finestra separata (NON la finestra admin)
+# 2. Registra un account utente di test
+# 3. Aggiungi un prodotto al carrello
+# 4. Vai al checkout
+# 5. Scegli "Pagamento online"
+# 6. Usa la carta di test Stripe:
+#    Numero: 4242 4242 4242 4242
+#    Scadenza: 12/30 (qualsiasi data futura)
+#    CVC: 123
+# 7. Completa il pagamento
+# 8. Verifica:
+#    - La pagina di conferma appare
+#    - L'ordine è visibile in "I miei ordini"
+#    - L'ordine è visibile nella dashboard admin
+# 9. Nella dashboard admin, testa il cambio stato ordine
+
+
+# ══════════════════════════════════════════════════════════════
+#   FASE 8 — CRON JOBS (processi automatici)
+#   Tempo stimato: 10 minuti
+# ══════════════════════════════════════════════════════════════
+
+# Ci sono 3 processi che devono girare automaticamente.
+# Il più semplice è usare pg_cron di Supabase.
+
+# 1. Vai su Supabase → SQL Editor → New query
+
+# COPIA E INCOLLA QUESTO BLOCCO:
+
+-- Abilita pg_cron (se non già attivo)
+-- CREATE EXTENSION IF NOT EXISTS pg_cron;
+
+-- Rilascio stock scaduto ogni 5 minuti
+SELECT cron.schedule(
+  'release-expired-stock',
+  '*/5 * * * *',
+  $$SELECT release_expired_reservations()$$
+);
+
+# 2. Clicca "Run"
+#    Se dà errore "pg_cron not available", il tuo piano Supabase
+#    potrebbe non supportarlo. In quel caso usa un servizio cron
+#    esterno come https://cron-job.org (gratuito):
+#    - URL: https://tuosito.netlify.app/api/stock/release
+#    - Metodo: POST
+#    - Header: Authorization: Bearer TUA_SERVICE_ROLE_KEY
+#    - Frequenza: ogni 5 minuti
+
+# Per la sincronizzazione recensioni Google e le statistiche,
+# puoi usare le Edge Functions di Supabase.
+# Vedi il file DEPLOY-GUIDE.md per i dettagli completi.
+
+
+# ══════════════════════════════════════════════════════════════
+#   FASE 9 — DOMINIO PERSONALIZZATO (opzionale)
+#   Tempo stimato: 15 minuti + attesa DNS
+# ══════════════════════════════════════════════════════════════
+
+# Se hai un dominio (es: macelleria-amici.it):
+
+# 1. Su Netlify:
+#    - Site settings → Domain management → Add custom domain
+#    - Inserisci: macelleria-amici.it
+#    - Netlify ti chiederà di verificare il DNS
+
+# 2. Sul tuo registrar DNS (Aruba, Register, GoDaddy, ecc.):
+#    Aggiungi questi record:
+#
+#    Tipo    Nome    Valore
+#    CNAME   @       macelleria-amici.netlify.app
+#    CNAME   www     macelleria-amici.netlify.app
+
+# 3. Attendi la propagazione DNS (da 5 minuti a 48 ore)
+
+# 4. Netlify configurerà automaticamente HTTPS (Let's Encrypt)
+
+# 5. DOPO che il dominio funziona, aggiorna:
+#    - Netlify env: NEXT_PUBLIC_SITE_URL = https://macelleria-amici.it
+#    - Supabase Auth: Site URL = https://macelleria-amici.it
+#    - Supabase Auth: Redirect URLs → aggiungi https://macelleria-amici.it/**
+#    - Stripe Webhook: aggiorna URL a https://macelleria-amici.it/api/webhooks/stripe
+#    - Rideploy su Netlify
+
+
+# ══════════════════════════════════════════════════════════════
+#   FASE 10 — ANDARE LIVE CON PAGAMENTI REALI
+# ══════════════════════════════════════════════════════════════
+
+# Quando sei pronto per accettare pagamenti reali:
+
+# 1. Completa la verifica attività su Stripe
+#    (dati azienda, IBAN, documento identità)
+
+# 2. Su Stripe Dashboard, disattiva "Test mode"
+
+# 3. Copia le nuove chiavi LIVE:
+#    pk_live_...
+#    sk_live_...
+
+# 4. Crea un NUOVO webhook con le stesse impostazioni
+#    ma con la URL live, e copia il nuovo whsec_...
+
+# 5. Su Netlify, aggiorna le env vars:
+#    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY = pk_live_...
+#    STRIPE_SECRET_KEY = sk_live_...
+#    STRIPE_WEBHOOK_SECRET = whsec_... (quello nuovo)
+
+# 6. Rideploy su Netlify
+
+# ⚠️ Prima di andare live, assicurati di aver:
+# - Compilato la Privacy Policy con i dati reali
+# - Compilato la Cookie Policy
+# - Testato tutto il flusso in modalità test
+# - Verificato che le email funzionino
+
+
+# ══════════════════════════════════════════════════════════════
+#   RIEPILOGO RAPIDO DELLE CHIAVI NECESSARIE
+# ══════════════════════════════════════════════════════════════
+
+# Variabile                              │ Dove trovarla
+# ───────────────────────────────────────┼──────────────────────────────
+# NEXT_PUBLIC_SUPABASE_URL               │ Supabase → Settings → API
+# NEXT_PUBLIC_SUPABASE_ANON_KEY          │ Supabase → Settings → API
+# SUPABASE_SERVICE_ROLE_KEY              │ Supabase → Settings → API
+# NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY     │ Stripe → Developers → API keys
+# STRIPE_SECRET_KEY                      │ Stripe → Developers → API keys
+# STRIPE_WEBHOOK_SECRET                  │ Stripe → Developers → Webhooks → tuo endpoint
+# GOOGLE_PLACES_API_KEY (opzionale)      │ Google Cloud Console → Credentials
+# GOOGLE_PLACE_ID (opzionale)            │ Google Maps Place ID Finder
+# NEXT_PUBLIC_SITE_URL                   │ Il tuo URL Netlify
+# EMAIL_FROM                             │ La tua email mittente
+# RESEND_API_KEY (opzionale)             │ Resend.com → API Keys
+
+
+# ══════════════════════════════════════════════════════════════
+#   SE HAI PROBLEMI
+# ══════════════════════════════════════════════════════════════
+
+# Problema: "Il sito carica ma è tutto vuoto/bianco"
+# → Controlla le env vars su Netlify (soprattutto SUPABASE_URL e ANON_KEY)
+# → Controlla la console browser (F12) per errori
+
+# Problema: "Login non funziona"
+# → Verifica Site URL in Supabase Auth settings
+# → Verifica Redirect URLs in Supabase Auth settings
+
+# Problema: "Pagamento Stripe non funziona"
+# → Verifica STRIPE_SECRET_KEY in Netlify
+# → Usa la carta test 4242 4242 4242 4242
+
+# Problema: "Webhook Stripe non viene ricevuto"
+# → Verifica URL del webhook su Stripe Dashboard
+# → Verifica STRIPE_WEBHOOK_SECRET in Netlify
+# → Su Stripe → Webhooks → clicca il tuo endpoint → vedi "Recent events"
+
+# Problema: "Build su Netlify fallisce"
+# → Leggi il deploy log per l'errore specifico
+# → Se dice "Cannot find module": npm install non è stato fatto
+# → Se dice "Type error": potrebbe essere una env var mancante
+
+# Problema: "Admin dice Accesso non autorizzato"
+# → Verifica che il profilo abbia role = 'admin' nella tabella profiles
+# → Riesegui: UPDATE profiles SET role = 'admin' WHERE email = '...';
+
+# Problema: "Le modifiche admin non si vedono sul sito"
+# → Aspetta 60 secondi (cache ISR) oppure
+# → Le modifiche client-side (prodotti, carrello) sono immediate
+# → Le pagine statiche (home, chi siamo) si aggiornano entro 60s
