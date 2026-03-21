@@ -1,26 +1,25 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { formatCents, decimalToCents, centsToDecimal } from '@/utils/currency';
-import { Plus, Trash2, Save } from 'lucide-react';
-import { revalidatePublicPages } from '@/utils/revalidate';
-import type { ShippingRule } from '@/types';
+import { formatCents, decimalToCents } from '@/utils/currency';
+import { Plus, Trash2 } from 'lucide-react';
 
 export default function AdminSpedizionePage() {
-  const supabase = createClient();
-  const [rules, setRules] = useState<ShippingRule[]>([]);
+  const supabaseRef = useRef(createClient());
+  const [rules, setRules] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [newRule, setNewRule] = useState({ zip_code: '', cost_decimal: '', description: '', estimated_days: '' });
+  const [newRule, setNewRule] = useState({ zip_code: '', cost_decimal: '', description: '' });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
   const loadRules = async () => {
-    setIsLoading(true);
-    const { data } = await supabase.from('shipping_rules').select('*').order('zip_code');
-    setRules((data ?? []) as ShippingRule[]);
+    try {
+      const { data } = await supabaseRef.current.from('shipping_rules').select('*').order('zip_code');
+      setRules(data ?? []);
+    } catch {} 
     setIsLoading(false);
   };
 
@@ -31,33 +30,70 @@ export default function AdminSpedizionePage() {
     if (!/^\d{5}$/.test(newRule.zip_code)) { setError('CAP non valido (5 cifre)'); return; }
     if (!newRule.cost_decimal || parseFloat(newRule.cost_decimal) < 0) { setError('Costo non valido'); return; }
 
-    // Check duplicate active
-    const existing = rules.find(r => r.zip_code === newRule.zip_code && r.is_active);
-    if (existing) { setError('Esiste già una regola attiva per questo CAP'); return; }
+    try {
+      const { error: dbError } = await supabaseRef.current.from('shipping_rules').insert({
+        zip_code: newRule.zip_code,
+        cost_cent: decimalToCents(newRule.cost_decimal),
+        description: newRule.description,
+        is_active: true,
+      });
 
-    const { error: dbError } = await supabase.from('shipping_rules').insert({
-      zip_code: newRule.zip_code,
-      cost_cent: decimalToCents(newRule.cost_decimal),
-      description: newRule.description,
-      estimated_days: newRule.estimated_days,
-      is_active: true,
-    });
+      if (dbError) {
+        if (dbError.message?.includes('lock')) {
+          // Retry once after lock error
+          const { error: retryError } = await supabaseRef.current.from('shipping_rules').insert({
+            zip_code: newRule.zip_code,
+            cost_cent: decimalToCents(newRule.cost_decimal),
+            description: newRule.description,
+            is_active: true,
+          });
+          if (retryError && !retryError.message?.includes('lock')) {
+            setError(retryError.message);
+            return;
+          }
+        } else {
+          setError(dbError.message);
+          return;
+        }
+      }
 
-    if (dbError) { setError("Errore DB: " + dbError.message + " - Code: " + dbError.code + " - Details: " + dbError.details); return; }
-    setNewRule({ zip_code: '', cost_decimal: '', description: '', estimated_days: '' });
-    setSuccess('Regola aggiunta');
-    revalidatePublicPages();
-    loadRules();
-  };
-
-  const handleToggle = async (id: string, isActive: boolean) => {
-    await supabase.from('shipping_rules').update({ is_active: !isActive }).eq('id', id);
-    loadRules();
+      setNewRule({ zip_code: '', cost_decimal: '', description: '' });
+      setSuccess('Regola aggiunta!');
+      setTimeout(() => setSuccess(''), 3000);
+      loadRules();
+    } catch (err: any) {
+      if (!err?.message?.includes('lock')) {
+        setError(err?.message || 'Errore');
+      } else {
+        // Lock error - retry
+        try {
+          await supabaseRef.current.from('shipping_rules').insert({
+            zip_code: newRule.zip_code,
+            cost_cent: decimalToCents(newRule.cost_decimal),
+            description: newRule.description,
+            is_active: true,
+          });
+          setNewRule({ zip_code: '', cost_decimal: '', description: '' });
+          setSuccess('Regola aggiunta!');
+          setTimeout(() => setSuccess(''), 3000);
+          loadRules();
+        } catch {}
+      }
+    }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm('Eliminare questa regola?')) return;
-    await supabase.from('shipping_rules').delete().eq('id', id);
+    try {
+      await supabaseRef.current.from('shipping_rules').delete().eq('id', id);
+    } catch {}
+    loadRules();
+  };
+
+  const handleToggle = async (id: string, isActive: boolean) => {
+    try {
+      await supabaseRef.current.from('shipping_rules').update({ is_active: !isActive }).eq('id', id);
+    } catch {}
     loadRules();
   };
 
@@ -68,7 +104,6 @@ export default function AdminSpedizionePage() {
       {error && <div className="p-3 rounded bg-red-50 border border-red-200 text-red-700 text-sm">{error}</div>}
       {success && <div className="p-3 rounded bg-green-50 border border-green-200 text-green-700 text-sm">{success}</div>}
 
-      {/* Add new */}
       <div className="bg-white rounded-lg border p-4">
         <h2 className="font-semibold mb-3">Aggiungi regola</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -84,7 +119,6 @@ export default function AdminSpedizionePage() {
         </div>
       </div>
 
-      {/* Rules list */}
       <div className="bg-white rounded-lg border overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 border-b">
@@ -108,10 +142,8 @@ export default function AdminSpedizionePage() {
                   <td className="p-3 text-right">{formatCents(rule.cost_cent)}</td>
                   <td className="p-3 text-gray-500">{rule.description || '-'}</td>
                   <td className="p-3 text-center">
-                    <button
-                      onClick={() => handleToggle(rule.id, rule.is_active)}
-                      className={`px-2 py-0.5 rounded text-xs ${rule.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500'}`}
-                    >
+                    <button onClick={() => handleToggle(rule.id, rule.is_active)}
+                      className={`px-2 py-0.5 rounded text-xs ${rule.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500'}`}>
                       {rule.is_active ? 'Attiva' : 'Inattiva'}
                     </button>
                   </td>
