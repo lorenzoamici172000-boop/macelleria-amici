@@ -24,7 +24,7 @@ export default function AdminSpedizionePage() {
     setIsLoading(false);
   };
 
-  useEffect(() => { loadRules(); }, [supabase]);
+  useEffect(() => { loadRules(); }, []);
 
   const handleAdd = async () => {
     setError(''); setSuccess('');
